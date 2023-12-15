@@ -20,7 +20,7 @@ class Validation(object):
         
     def is_valid_pages_number(self, page_number: str) -> int:
         matches = re.findall(r'^[1-9]\d*$')
-        return bool(matches.match(str(page_number)))
+        #return bool(matches.match(str(page_number)))
     
         if matches:
             result = int(matches[0])
