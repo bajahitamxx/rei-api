@@ -2,6 +2,8 @@ from selectolax.parser import HTMLParser
 
 from scraper.rei import ReiSpider #untuk memanggil scraper dari rei.py
 from scraper.debug import ReiSpiderDebug
+from scraper.runner import Runner
+
 
 def main():
     spider: ReiSpider = ReiSpider()
@@ -13,5 +15,10 @@ def debug(): #digunakan untuk menjalankan debug
         soup = HTMLParser(html=html_file.read())
         spider.get_product_detail(soup=soup)
 
+def run():
+    spider = Runner()
+    product = spider.generate_all_products(search_query="shoes")
+    print(product)
+
 if __name__ == "__main__":
-    debug() #didalam main.py kemudian kita menjalankan debug.py
+    run() #didalam main.py kemudian kita menjalankan debug.py
