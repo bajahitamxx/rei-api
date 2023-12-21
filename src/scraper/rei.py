@@ -15,7 +15,7 @@ class ReiSpider(object):
         if page_number == None or page_number == 1:
             url:str = self.base_url + "/search?q={}".format(search_query)
         else:
-            url:str = self.base_url + "/search?q={}&page={}".format(search_query)(search_query,page_number)
+            url:str = self.base_url + "/search?q={}&page={}".format(search_query,page_number)
 
         headers: dict[str, Any] = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
 
@@ -30,26 +30,17 @@ class ReiSpider(object):
         return soup
     
     def get_page_number (self, soup = HTMLParser) -> int:
-        pages = soup.css_first('a[data-id="pagination-test-link]').text()
+        pages = soup.css_first('a[data-id="pagination-test-link"]').text()
         return self.validation.is_valid_pages_number(pages)
 
         
 
-    def get_product_detail(self, url: str):
-        headers: dict[str, Any] = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"} #agar tidak terdeteksi sebgai bot
-        response = httpx.get(url=url, headers=headers) #untuk mengambil respon dari url target
+    def get_product_detail(self, soup:HTMLParser):
+        # data mentah
+        scripts = soup.css_first("script#modelData")
 
-        #langkah sesudah mendapatkan data
-        f = open("response_detail.html", 'w+', encoding="UTF-8") #buat ngecek file apabila terbloking
-        f.write(response.text)
-        f.close()
-
-        soup: HTMLParser = HTMLParser(response.text)
-        
-        #data mentah
-        scripts = soup.css_first("script#modelData").text()
-
-        datas = self.get_data_from_json(scripts)
+        # teknik parsing
+        datas = self.get_data_from_json(scripts.text())
         return datas
 
     def get_data_from_json(self, obj:str) -> dict[str, Any]:
@@ -60,15 +51,13 @@ class ReiSpider(object):
         #proses scrapping json
         product = datas["pageData"]["product"]
         product_price = product["availablePrices"]
-        product_url = self.base_url["canonicalUrl"]
+        product_url = self.base_url + product ["canonicalUrl"]
         product_review = product["reviewSummary"]
         product_size = product["sizes"]
         product_size_chart = product["sizeChart"]
         product_image = product["images"]
         product_specs = product["techSpecs"]
-        product_feature = product["features"]
-        product_rating = product_review["ratingHistogram"]
-        product_rating = product["reviewSummary"]["ratingHistogram"] 
+        product_feature = product["features"] 
         product_sku = product["skus"]
         product_color = product["colors"]
 
@@ -86,7 +75,6 @@ class ReiSpider(object):
         data_dict["product_image"] = product_image
         data_dict["product_specification"] = product_specs
         data_dict["product_feature"] = product_feature
-        data_dict["product_rating"] = product_rating
         data_dict["product_sku"] = product_sku
         data_dict["product_color"] = product_color
     
@@ -94,7 +82,7 @@ class ReiSpider(object):
     
     def get_product_items(self, soup:HTMLParser) -> list[str]:
         urls: list[str] = []
-        search_items = soup.css_first("div#search-result")
+        search_items = soup.css_first("div#search-results")
         products = search_items.css("ul.cdr-grid_13-5-2 > li")
         for product in products:
             product_url = product.css_first("a").attributes.get("href")
@@ -105,13 +93,13 @@ class ReiSpider(object):
         return urls
     
     def get_product_list (self, soup: HTMLParser) -> list[str]:
-        product : list[dict[str, Any]] = []
+        products : list[dict[str, Any]] = []
 
-        product_list = self.get_product_items(soup = soup)
-        for index, product in enumerate(product_list, start=1):
-            print("generate product data on URL: {}({} of {})". format(product, index, len(product_list)))
-            product_data = self.get_product_data(url = product)
-            product.append(product_data)
+        products_list = self.get_product_items(soup=soup)
+        for index, product in enumerate(products_list, start=1):
+            print("generate product data on URL: {} ({} of {})".format(product, index, len(products_list)))
+            product_data = self.get_product_data(url=product)
+            products.append(product_data)
 
         #proses product disini
         return product
@@ -122,14 +110,14 @@ class ReiSpider(object):
         #olah response
         response = httpx.get(url=url, headers=headers)
 
-        f = open("response_detail.html", 'w+', encoding="UTF-8") 
+        f = open("response_detail.html", "w+", encoding="UTF-8")
         f.write(response.text)
         f.close()
 
         soup: HTMLParser = HTMLParser(response.text)
         
         #data ambil disini
-        product = self.get_product_detail(soup = soup)
+        product = self.get_product_detail(soup=soup)
         
         #hasilnya dikembalikan
         return product
