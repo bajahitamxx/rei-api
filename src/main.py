@@ -4,6 +4,8 @@ from scraper.rei import ReiSpider #untuk memanggil scraper dari rei.py
 from scraper.debug import ReiSpiderDebug
 from scraper.runner import Runner
 
+from scraper.command.cli import app as cli_app
+
 
 def main():
     spider: ReiSpider = ReiSpider()
@@ -21,4 +23,4 @@ def run():
     print(product)
 
 if __name__ == "__main__":
-    run() #didalam main.py kemudian kita menjalankan debug.py
+    cli_app(prog_name="main")
