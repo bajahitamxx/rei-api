@@ -6,6 +6,10 @@ authors = ["Lutfi Verdian"]
 license = "MIT"
 readme = "README.md"
 
+packages = [
+    { include= "scraper",  from = "src"},
+]
+
 [tool.poetry.dependencies]
 python = "^3.10"
 httpx = "^0.26.0"
