@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rei api"
+name = "reiScraper"
 version = "0.1.0"
 description = "Rei Scrapper"
 authors = ["Lutfi Verdian"]
